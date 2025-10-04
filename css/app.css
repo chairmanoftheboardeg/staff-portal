@@ -1,1 +1,21 @@
+:root{
+  --bg:#0b1224; --panel:#0f1730; --line:#1f2c4a; --text:#eaf1ff; --muted:#9fb0d1; --red:#d71920;
+}
+*{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+a{color:#fff} .muted{color:var(--muted)}
+.center{min-height:100vh;display:grid;place-items:center}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.04));border:1px solid var(--line);border-radius:14px;padding:18px;min-width:320px;display:grid;gap:10px}
+input,select,textarea,button{background:#0d162f;color:#fff;border:1px solid var(--line);border-radius:10px;padding:10px}
+button{cursor:pointer}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);background:#0c142a;position:sticky;top:0}
+.brand{font-weight:800}
+nav a{margin:0 8px}
+.user{display:flex;align-items:center;gap:10px}
+.pad{padding:16px}
+.row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0}
+.row:last-child{border-bottom:0}
+.grid.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.links{list-style:none;padding:0;margin:8px 0}
+.links li{margin:6px 0}
+.tag{font-size:12px;border:1px solid var(--line);padding:2px 6px;border-radius:999px;margin-left:6px}
 
