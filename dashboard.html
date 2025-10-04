@@ -1,1 +1,170 @@
+<!doctype html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EGR Staff Hub</title>
+<link rel="stylesheet" href="/css/app.css">
+<script defer src="/js/api.js"></script>
+</head><body>
+<header class="topbar">
+  <div class="brand">EGR Staff Hub</div>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#requests">Requests</a>
+    <a href="#docs">Documents</a>
+    <a href="#ann">Announcements</a>
+  </nav>
+  <div class="user">
+    <span id="name"></span>
+    <button id="out">Logout</button>
+  </div>
+</header>
+
+<main id="app" class="pad"></main>
+
+<script>
+(async function(){
+  const token = getToken();
+  if (!token) return location.href = "/index.html";
+
+  const meCached = localStorage.getItem("egr_profile");
+  const me = meCached ? JSON.parse(meCached) : (await api("me", { token })).profile;
+  document.getElementById('name').textContent = me?.full_name || me?.email || "Staff";
+
+  // router
+  async function render(){
+    const hash = location.hash.replace('#','') || 'home';
+    const app = document.getElementById('app');
+
+    if (hash === 'home') {
+      // announcements
+      const res = await api("listAnnouncements");
+      app.innerHTML = `
+        <section class="card">
+          <h2>Welcome, ${me.full_name || me.email}</h2>
+          <p class="muted">Role: ${me.role || 'staff'} · Department: ${me.department || '-'}</p>
+        </section>
+        <section class="card">
+          <h3>Announcements</h3>
+          ${res.ok && res.items.length ? res.items.map(a=>`
+            <div class="row">
+              <div><strong>${a.title}</strong></div>
+              <div>${a.body}</div>
+            </div>
+          `).join('') : 'No announcements yet.'}
+        </section>
+      `;
+    }
+
+    if (hash === 'schedule') {
+      // Simple v1: embed a Google Calendar you control (department or company)
+      app.innerHTML = `
+        <section class="card">
+          <h2>Weekly Schedule</h2>
+          <iframe style="width:100%;height:70vh;border:0;border-radius:12px"
+            src="https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_PUBLIC_LINK"></iframe>
+          <p class="muted">Ask your manager to add events; your department calendar will appear here.</p>
+        </section>
+      `;
+    }
+
+    if (hash === 'tasks') {
+      const res = await api("listTasks", { token });
+      app.innerHTML = `
+        <section class="card"><h2>My Tasks</h2>
+          ${res.ok && res.items.length ? res.items.map(t=>`
+            <div class="row">
+              <div><strong>${t.title}</strong> <span class="tag">${t.status}</span> <span class="tag">${t.priority}</span></div>
+              <div>${t.due_at ? 'Due ' + new Date(t.due_at).toLocaleString() : ''}</div>
+            </div>
+          `).join('') : 'No tasks assigned.'}
+        </section>
+      `;
+    }
+
+    if (hash === 'requests') {
+      app.innerHTML = `
+        <section class="grid two">
+          <form class="card" id="leaveForm">
+            <h3>Request Leave</h3>
+            <label>Start <input type="date" id="lvStart" required></label>
+            <label>End <input type="date" id="lvEnd" required></label>
+            <label>Type <select id="lvType"><option>vacation</option><option>sick</option><option>personal</option></select></label>
+            <label>Reason <textarea id="lvWhy" placeholder="Reason"></textarea></label>
+            <button>Submit</button><p id="lvMsg" class="muted"></p>
+          </form>
+          <form class="card" id="ticketForm">
+            <h3>Concern / Request</h3>
+            <label>Subject <input id="tkSubject" required></label>
+            <label>Message <textarea id="tkMsg" required></textarea></label>
+            <button>Send</button><p id="tkInfo" class="muted"></p>
+          </form>
+        </section>
+        <section class="card">
+          <h3>Resignation</h3>
+          <p class="muted">To resign, please contact your manager or HR. (We can add a formal flow later.)</p>
+        </section>
+      `;
+
+      document.getElementById('leaveForm').onsubmit = async (e)=>{
+        e.preventDefault();
+        const r = await api("createRequest", {
+          token,
+          type: "leave",
+          start_date: document.getElementById('lvStart').value,
+          end_date: document.getElementById('lvEnd').value,
+          subject: "Leave request",
+          message: document.getElementById('lvWhy').value
+        });
+        document.getElementById('lvMsg').textContent = r.ok ? "Submitted." : (r.error||"Failed");
+      };
+
+      document.getElementById('ticketForm').onsubmit = async (e)=>{
+        e.preventDefault();
+        const r = await api("createRequest", {
+          token,
+          type: "ticket",
+          subject: document.getElementById('tkSubject').value,
+          message: document.getElementById('tkMsg').value
+        });
+        document.getElementById('tkInfo').textContent = r.ok ? "Sent." : (r.error||"Failed");
+      };
+    }
+
+    if (hash === 'docs') {
+      app.innerHTML = `
+        <section class="card">
+          <h2>Documents</h2>
+          <p class="muted">Link your staff PDFs (handbook, policy, SOPs) here as Google Drive or GitHub-hosted files.</p>
+          <ul class="links">
+            <li><a target="_blank" href="#">Staff Handbook (PDF)</a></li>
+            <li><a target="_blank" href="#">HR Policies (PDF)</a></li>
+            <li><a target="_blank" href="#">OCC SOPs (PDF)</a></li>
+          </ul>
+        </section>
+      `;
+    }
+
+    if (hash === 'ann') {
+      const res = await api("listAnnouncements");
+      app.innerHTML = `
+        <section class="card"><h2>Announcements</h2>
+          ${res.ok && res.items.length ? res.items.map(a=>`
+            <div class="row">
+              <div><strong>${a.title}</strong></div>
+              <div>${a.body}</div>
+            </div>
+          `).join('') : 'No announcements yet.'}
+        </section>
+      `;
+    }
+  }
+
+  window.addEventListener('hashchange', render);
+  render();
+
+  document.getElementById('out').onclick = ()=>{ clearToken(); location.href = "/index.html"; };
+})();
+</script>
+</body></html>
 
