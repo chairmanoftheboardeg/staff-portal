@@ -1,1 +1,28 @@
+<!doctype html><html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EGR Staff Hub — Sign In</title>
+<link rel="stylesheet" href="/css/app.css">
+<script defer src="/js/api.js"></script>
+</head><body class="center">
+  <div class="card">
+    <h1>Staff Hub</h1>
+    <p class="muted">Sign in with your staff email and access code</p>
+    <input id="email" placeholder="Email" type="email">
+    <input id="code" placeholder="Access code" type="password">
+    <button id="go">Sign In</button>
+    <p id="msg" class="muted"></p>
+  </div>
+<script>
+document.getElementById('go').onclick = async () => {
+  const email = document.getElementById('email').value.trim();
+  const code  = document.getElementById('code').value.trim();
+  const r = await api("login", { email, code });
+  const m = document.getElementById('msg');
+  if (!r.ok) { m.textContent = r.error || "Login failed"; return; }
+  saveToken(r.token);
+  localStorage.setItem("egr_profile", JSON.stringify(r.profile));
+  window.location.href = "/dashboard.html";
+};
+</script>
+</body></html>
 
