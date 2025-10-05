@@ -5,8 +5,6 @@
 <title>EGR Staff Hub — Sign In</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#111"/>
-<link rel="preload" as="image" href="/img/bg1.jpg">
-<link rel="preload" as="image" href="/img/bg2.jpg">
 <style>
   :root{
     --bg:#0b0b0b; --panel:#141414; --line:#2a2a2a; --text:#fff; --muted:#cfcfcf;
@@ -14,7 +12,7 @@
   }
   *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
 
-  /* BG carousel */
+  /* BG carousel (uses your filenames exactly) */
   .stage{position:relative;min-height:100vh;display:grid;place-items:center;overflow:hidden}
   .slides{position:absolute;inset:0;z-index:0}
   .slides img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease;filter:brightness(.45)}
@@ -24,7 +22,7 @@
         linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
         z-index:0}
 
-  /* Top mini brand */
+  /* Brand bar */
   .brandbar{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;color:var(--offwhite);
             display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.02em}
   .brandbar .logo{width:26px;height:26px;background:#fff;border-radius:6px;
@@ -49,14 +47,13 @@
   .linkbtn{border:1px solid rgba(255,255,255,.14);padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35)}
   .status{min-height:20px}
   .error{color:#ffb3b3}.ok{color:#b7ffcf}.muted{color:#cfcfcf}
-
   .foot{color:#bbb;text-align:center;font-size:.9rem}
   .foot a{color:#fff}
 </style>
 </head>
 <body>
 <main class="stage">
-  <!-- BG images: put your files in /img/ and update names below in JS -->
+  <!-- Backgrounds using your EXACT filenames at repo root -->
   <div class="slides" id="slides"></div>
   <div class="tint"></div>
 
@@ -101,29 +98,31 @@
 </main>
 
 <script>
-/* ====== CONFIG ====== */
-const API_URL = "YOUR_APPS_SCRIPT_URL"; // e.g. https://script.google.com/macros/s/…/exec
-const BG = [
-  "/img/bg1.jpg",
-  "/img/bg2.jpg",
-  "/img/bg3.jpg"
-]; // <- put your images in /img/ and use their names
+/* ===== CONFIG ===== */
+const API_URL = "YOUR_APPS_SCRIPT_URL"; // <-- paste your /exec URL
 
-/* ====== BG carousel ====== */
+/* Use your EXACT filenames at the repo root. We URL-encode spaces safely. */
+const BG_NAMES = [
+  "EGR Flight Pic 350.png",
+  "EGR Flight Pic 380.png",
+  "EK 707 group pic.png"
+];
+
+/* ===== BG carousel that respects spaces in filenames ===== */
 const slides = document.getElementById('slides');
-const imgs = BG.map(u => { const im=new Image(); im.src=u; slides.appendChild(im); return im; });
+const urls = BG_NAMES.map(n => n.split('/').map(encodeURIComponent).join('/')); // keep names, just encode spaces
+const imgs = urls.map(u => { const im=new Image(); im.src=u; slides.appendChild(im); return im; });
 let ix=0; function show(i){ imgs.forEach((im,k)=>im.classList.toggle('show',k===i)); }
 imgs[0].onload=()=>show(0); setInterval(()=>{ ix=(ix+1)%imgs.length; show(ix); }, 4200);
 
-/* ====== Helpers ====== */
+/* ===== Helpers ===== */
 const $ = s=>document.querySelector(s);
 const statusEl = $("#status");
 function setStatus(m, cls="muted"){ statusEl.textContent=m||""; statusEl.className="status "+cls; }
 function loading(on){ $("#loginBtn").disabled=!!on; $("#loginBtn").textContent=on?"Signing in…":"Sign In"; }
-function rememberLoad(){ const s=localStorage.getItem("egr_email"); if(s){ $("#email").value=s; $("#remember").checked=true; } }
-rememberLoad();
+(function rememberLoad(){ const s=localStorage.getItem("egr_email"); if(s){ $("#email").value=s; $("#remember").checked=true; } })();
 
-/* ====== JSONP (no CORS) ====== */
+/* ===== JSONP (no CORS) ===== */
 function jsonp(method, params, cb){
   const callback = "cb_"+Math.random().toString(36).slice(2);
   const q = new URLSearchParams({ method, callback, ...params });
@@ -134,7 +133,7 @@ function jsonp(method, params, cb){
   document.body.appendChild(s);
 }
 
-/* ====== Login ====== */
+/* ===== Login ===== */
 function doLogin(){
   const email = $("#email").value.trim();
   const code  = $("#code").value.trim();
