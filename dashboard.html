@@ -1,170 +1,248 @@
-<!doctype html><html><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>EGR Staff Hub</title>
-<link rel="stylesheet" href="/css/app.css">
-<script defer src="/js/api.js"></script>
-</head><body>
-<header class="topbar">
-  <div class="brand">EGR Staff Hub</div>
-  <nav>
-    <a href="#home">Home</a>
-    <a href="#schedule">Schedule</a>
-    <a href="#tasks">Tasks</a>
-    <a href="#requests">Requests</a>
-    <a href="#docs">Documents</a>
-    <a href="#ann">Announcements</a>
-  </nav>
-  <div class="user">
-    <span id="name"></span>
-    <button id="out">Logout</button>
-  </div>
-</header>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>EGR Staff Hub — Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#111"/>
+<style>
+  :root{
+    --bg:#0b0b0b; --panel:#141414; --line:#262626; --text:#fefefe; --muted:#cfcfcf;
+    --red:#d71920; --red2:#a31318; --white:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
 
-<main id="app" class="pad"></main>
+  .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  .sidebar{border-right:1px solid var(--line);background:#0f0f0f;display:flex;flex-direction:column}
+  .side-brand{display:flex;align-items:center;gap:10px;padding:14px;font-weight:900}
+  .logo{width:22px;height:22px;background:#fff;border-radius:6px;
+    -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;
+            mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;}
+  .nav{display:flex;flex-direction:column;padding:8px}
+  .nav a{padding:10px 12px;border-radius:10px;color:#eee;text-decoration:none}
+  .nav a:hover{background:#171717}
+  .nav a.active{background:linear-gradient(180deg,var(--red),var(--red2));}
+
+  .main{display:flex;flex-direction:column;min-width:0}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);background:#0f0f0f}
+  .profile{display:flex;align-items:center;gap:10px}
+  .avatar{width:36px;height:36px;border-radius:50%;background:#222;object-fit:cover}
+  .meta{display:flex;flex-direction:column;line-height:1.1}
+  .meta small{color:var(--muted)}
+
+  .content{padding:16px;display:grid;grid-template-columns:2fr 1fr;gap:16px}
+  .card{background:#111;border:1px solid var(--line);border-radius:14px;padding:14px}
+  h2{margin:4px 0 10px}
+  .row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0}
+  .row:last-child{border-bottom:0}
+  .tag{font-size:12px;border:1px solid var(--line);padding:2px 6px;border-radius:999px;margin-left:6px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .quick a{display:block;text-align:center;border:1px solid var(--line);padding:10px;border-radius:12px;background:#141414;text-decoration:none;color:#fff}
+  .links ul{list-style:none;margin:0;padding:0}
+  .links li{margin:6px 0}
+  .links a{color:#fff}
+
+  @media (max-width:1000px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{display:none}
+    .content{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="side-brand"><div class="logo"></div> EGR Staff Hub</div>
+    <nav class="nav">
+      <a href="#dashboard" class="active">Dashboard</a>
+      <a href="#schedule">My Week</a>
+      <a href="#tasks">Tasks</a>
+      <a href="#requests">Requests</a>
+      <a href="#docs">Documents</a>
+      <a href="#ann">Announcements</a>
+      <a href="#help">Help</a>
+      <a href="#" id="logout">Log out</a>
+    </nav>
+  </aside>
+
+  <section class="main">
+    <header class="top">
+      <div class="profile">
+        <img id="avatar" class="avatar" alt="">
+        <div class="meta">
+          <strong id="name">Staff</strong>
+          <small id="submeta">Role • Department</small>
+        </div>
+      </div>
+      <div class="profile">
+        <a href="https://discord.com/channels/1189224375019388999" target="_blank" rel="noopener" class="tag">Open Dept Chat (Discord)</a>
+        <a href="https://careers.emiratesgrouproblox.link" target="_blank" rel="noopener" class="tag">Careers</a>
+        <a href="https://emiratesgrouproblox.link" target="_blank" rel="noopener" class="tag">Main Site</a>
+      </div>
+    </header>
+
+    <main class="content" id="app">
+      <!-- JS will render here -->
+    </main>
+  </section>
+</div>
 
 <script>
-(async function(){
-  const token = getToken();
-  if (!token) return location.href = "/index.html";
+/* ====== CONFIG ====== */
+const API_URL = "YOUR_APPS_SCRIPT_URL";
 
-  const meCached = localStorage.getItem("egr_profile");
-  const me = meCached ? JSON.parse(meCached) : (await api("me", { token })).profile;
+/* ====== JSONP util (same as login) ====== */
+function jsonp(method, params, cb){
+  const callback = "cb_"+Math.random().toString(36).slice(2);
+  const q = new URLSearchParams({ method, callback, ...params });
+  const s = document.createElement("script");
+  s.src = API_URL + "?" + q.toString();
+  window[callback] = (resp)=>{ cb(resp); document.body.removeChild(s); delete window[callback]; };
+  s.onerror = ()=>{ cb({ ok:false, error:"Network error" }); document.body.removeChild(s); delete window[callback]; };
+  document.body.appendChild(s);
+}
+
+/* ====== Auth ====== */
+const token = localStorage.getItem("egr_token");
+if (!token) location.href = "/index.html";
+
+/* ====== Profile & topbar ====== */
+const meCache = localStorage.getItem("egr_profile");
+let me = meCache ? JSON.parse(meCache) : null;
+function setTopbar(){
   document.getElementById('name').textContent = me?.full_name || me?.email || "Staff";
+  document.getElementById('submeta').textContent = `${me?.role || 'staff'} • ${me?.department || '-'}`;
+  const av = document.getElementById('avatar');
+  if (me?.avatar_url) av.src = me.avatar_url; else av.removeAttribute('src');
+}
+if (me) setTopbar();
+else jsonp("me",{token},(r)=>{ if(r.ok){ me=r.profile; localStorage.setItem("egr_profile", JSON.stringify(me)); setTopbar(); }});
 
-  // router
-  async function render(){
-    const hash = location.hash.replace('#','') || 'home';
-    const app = document.getElementById('app');
+/* ====== Simple router ====== */
+const app = document.getElementById('app');
+window.addEventListener('hashchange', render);
+document.getElementById('logout').onclick = ()=>{ localStorage.removeItem("egr_token"); localStorage.removeItem("egr_profile"); location.href="/index.html"; };
+render();
 
-    if (hash === 'home') {
-      // announcements
-      const res = await api("listAnnouncements");
-      app.innerHTML = `
-        <section class="card">
-          <h2>Welcome, ${me.full_name || me.email}</h2>
-          <p class="muted">Role: ${me.role || 'staff'} · Department: ${me.department || '-'}</p>
-        </section>
-        <section class="card">
-          <h3>Announcements</h3>
-          ${res.ok && res.items.length ? res.items.map(a=>`
-            <div class="row">
-              <div><strong>${a.title}</strong></div>
-              <div>${a.body}</div>
-            </div>
-          `).join('') : 'No announcements yet.'}
-        </section>
-      `;
-    }
+function render(){
+  const hash = location.hash.replace('#','') || 'dashboard';
 
-    if (hash === 'schedule') {
-      // Simple v1: embed a Google Calendar you control (department or company)
-      app.innerHTML = `
-        <section class="card">
-          <h2>Weekly Schedule</h2>
-          <iframe style="width:100%;height:70vh;border:0;border-radius:12px"
-            src="https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_PUBLIC_LINK"></iframe>
-          <p class="muted">Ask your manager to add events; your department calendar will appear here.</p>
-        </section>
-      `;
-    }
+  if (hash === 'dashboard') {
+    app.innerHTML = `
+      <section class="card">
+        <h2>Announcements</h2>
+        <div id="ann"></div>
+      </section>
 
-    if (hash === 'tasks') {
-      const res = await api("listTasks", { token });
-      app.innerHTML = `
-        <section class="card"><h2>My Tasks</h2>
-          ${res.ok && res.items.length ? res.items.map(t=>`
-            <div class="row">
-              <div><strong>${t.title}</strong> <span class="tag">${t.status}</span> <span class="tag">${t.priority}</span></div>
-              <div>${t.due_at ? 'Due ' + new Date(t.due_at).toLocaleString() : ''}</div>
-            </div>
-          `).join('') : 'No tasks assigned.'}
-        </section>
-      `;
-    }
+      <section class="card">
+        <h2>My Week (Overview)</h2>
+        <div class="grid2">
+          <div id="week"></div>
+          <div class="quick">
+            <a href="#requests">Request Leave</a>
+            <a href="#tasks">Open My Tasks</a>
+            <a href="https://discord.com/channels/1189224375019388999" target="_blank" rel="noopener">Open Dept Chat</a>
+            <a href="#docs">View Documents</a>
+          </div>
+        </div>
+      </section>
 
-    if (hash === 'requests') {
-      app.innerHTML = `
-        <section class="grid two">
-          <form class="card" id="leaveForm">
-            <h3>Request Leave</h3>
-            <label>Start <input type="date" id="lvStart" required></label>
-            <label>End <input type="date" id="lvEnd" required></label>
-            <label>Type <select id="lvType"><option>vacation</option><option>sick</option><option>personal</option></select></label>
-            <label>Reason <textarea id="lvWhy" placeholder="Reason"></textarea></label>
-            <button>Submit</button><p id="lvMsg" class="muted"></p>
-          </form>
-          <form class="card" id="ticketForm">
-            <h3>Concern / Request</h3>
-            <label>Subject <input id="tkSubject" required></label>
-            <label>Message <textarea id="tkMsg" required></textarea></label>
-            <button>Send</button><p id="tkInfo" class="muted"></p>
-          </form>
-        </section>
-        <section class="card">
-          <h3>Resignation</h3>
-          <p class="muted">To resign, please contact your manager or HR. (We can add a formal flow later.)</p>
-        </section>
-      `;
-
-      document.getElementById('leaveForm').onsubmit = async (e)=>{
-        e.preventDefault();
-        const r = await api("createRequest", {
-          token,
-          type: "leave",
-          start_date: document.getElementById('lvStart').value,
-          end_date: document.getElementById('lvEnd').value,
-          subject: "Leave request",
-          message: document.getElementById('lvWhy').value
-        });
-        document.getElementById('lvMsg').textContent = r.ok ? "Submitted." : (r.error||"Failed");
-      };
-
-      document.getElementById('ticketForm').onsubmit = async (e)=>{
-        e.preventDefault();
-        const r = await api("createRequest", {
-          token,
-          type: "ticket",
-          subject: document.getElementById('tkSubject').value,
-          message: document.getElementById('tkMsg').value
-        });
-        document.getElementById('tkInfo').textContent = r.ok ? "Sent." : (r.error||"Failed");
-      };
-    }
-
-    if (hash === 'docs') {
-      app.innerHTML = `
-        <section class="card">
-          <h2>Documents</h2>
-          <p class="muted">Link your staff PDFs (handbook, policy, SOPs) here as Google Drive or GitHub-hosted files.</p>
-          <ul class="links">
-            <li><a target="_blank" href="#">Staff Handbook (PDF)</a></li>
-            <li><a target="_blank" href="#">HR Policies (PDF)</a></li>
-            <li><a target="_blank" href="#">OCC SOPs (PDF)</a></li>
+      <section class="card">
+        <h2>Useful Links</h2>
+        <div class="links">
+          <ul>
+            <li><a target="_blank" rel="noopener" href="https://docs.google.com/">Google Drive</a></li>
+            <li><a target="_blank" rel="noopener" href="https://discord.com/channels/1189224375019388999">Discord (Staff)</a></li>
+            <li><a target="_blank" rel="noopener" href="https://careers.emiratesgrouproblox.link">Careers Portal</a></li>
+            <li><a target="_blank" rel="noopener" href="https://emiratesgrouproblox.link">Main Website</a></li>
           </ul>
-        </section>
-      `;
-    }
+        </div>
+      </section>
+    `;
 
-    if (hash === 'ann') {
-      const res = await api("listAnnouncements");
-      app.innerHTML = `
-        <section class="card"><h2>Announcements</h2>
-          ${res.ok && res.items.length ? res.items.map(a=>`
-            <div class="row">
-              <div><strong>${a.title}</strong></div>
-              <div>${a.body}</div>
-            </div>
-          `).join('') : 'No announcements yet.'}
-        </section>
-      `;
-    }
+    // Load announcements
+    jsonp("listAnnouncements", {}, (r)=>{
+      const el = document.getElementById('ann');
+      el.innerHTML = (r?.ok && r.items?.length)
+        ? r.items.map(a=>`<div class="row"><div><strong>${a.title}</strong></div><div>${a.body}</div></div>`).join('')
+        : 'Nothing yet.';
+    });
+
+    // Tiny week placeholder (you can swap to Google Calendar embed)
+    document.getElementById('week').innerHTML = `
+      <div class="row"><div><strong>Mon</strong></div><div class="tag">—</div></div>
+      <div class="row"><div><strong>Tue</strong></div><div class="tag">—</div></div>
+      <div class="row"><div><strong>Wed</strong></div><div class="tag">—</div></div>
+      <div class="row"><div><strong>Thu</strong></div><div class="tag">—</div></div>
+      <div class="row"><div><strong>Fri</strong></div><div class="tag">—</div></div>
+    `;
   }
 
-  window.addEventListener('hashchange', render);
-  render();
+  if (hash === 'schedule') {
+    app.innerHTML = `
+      <section class="card">
+        <h2>My Week</h2>
+        <iframe style="width:100%;height:72vh;border:0;border-radius:12px;background:#0f0f0f"
+          src="https://calendar.google.com/calendar/embed?src=YOUR_PUBLIC_CALENDAR"></iframe>
+        <p class="muted">Ask your manager to add events to your department/company calendar.</p>
+      </section>
+    `;
+  }
 
-  document.getElementById('out').onclick = ()=>{ clearToken(); location.href = "/index.html"; };
-})();
+  if (hash === 'tasks') {
+    app.innerHTML = `<section class="card"><h2>My Tasks</h2><div id="tasks"></div></section>`;
+    jsonp("listTasks",{token},(r)=>{
+      const el = document.getElementById('tasks');
+      el.innerHTML = (r?.ok && r.items?.length)
+        ? r.items.map(t=>`<div class="row"><div><strong>${t.title}</strong> <span class="tag">${t.status}</span> <span class="tag">${t.priority}</span></div><div>${t.due_at?('Due '+new Date(t.due_at).toLocaleString()):''}</div></div>`).join('')
+        : 'No tasks assigned.';
+    });
+  }
+
+  if (hash === 'requests') {
+    app.innerHTML = `
+      <section class="card">
+        <h2>Requests</h2>
+        <p class="muted">This page can be expanded later to submit leave, concerns, and resignation (via Apps Script).</p>
+        <a class="tag" href="mailto:hr@emiratesgrouproblox.link">Email HR</a>
+        <a class="tag" target="_blank" rel="noopener" href="https://discord.com/channels/1189224375019388999">DM HR on Discord</a>
+      </section>
+    `;
+  }
+
+  if (hash === 'docs') {
+    app.innerHTML = `
+      <section class="card"><h2>Documents</h2>
+        <ul>
+          <li><a target="_blank" rel="noopener" href="#">Staff Handbook (PDF)</a></li>
+          <li><a target="_blank" rel="noopener" href="#">HR Policies (PDF)</a></li>
+          <li><a target="_blank" rel="noopener" href="#">OCC SOP (PDF)</a></li>
+        </ul>
+      </section>
+    `;
+  }
+
+  if (hash === 'ann') {
+    app.innerHTML = `<section class="card"><h2>Announcements</h2><div id="ann2"></div></section>`;
+    jsonp("listAnnouncements", {}, (r)=>{
+      const el = document.getElementById('ann2');
+      el.innerHTML = (r?.ok && r.items?.length)
+        ? r.items.map(a=>`<div class="row"><div><strong>${a.title}</strong></div><div>${a.body}</div></div>`).join('')
+        : 'Nothing yet.';
+    });
+  }
+
+  if (hash === 'help') {
+    app.innerHTML = `
+      <section class="card"><h2>Help & Support</h2>
+        <p class="muted">Need help? Contact your manager or HR on Discord.</p>
+        <a class="tag" target="_blank" rel="noopener" href="https://discord.com/channels/1189224375019388999">Open HR Channel</a>
+      </section>
+    `;
+  }
+}
 </script>
-</body></html>
-
+</body>
+</html>
