@@ -4,141 +4,128 @@
 <meta charset="utf-8"/>
 <title>EGR Staff Hub — Sign In</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="theme-color" content="#0a0f1f"/>
-
+<meta name="theme-color" content="#111"/>
+<link rel="preload" as="image" href="/img/bg1.jpg">
+<link rel="preload" as="image" href="/img/bg2.jpg">
 <style>
   :root{
-    --bg:#0a0f1f; --panel:#0f1730; --line:#263658; --text:#eaf1ff; --muted:#9fb0d1;
-    --red:#d71920; --red2:#a31318; --white:#ffffff;
+    --bg:#0b0b0b; --panel:#141414; --line:#2a2a2a; --text:#fff; --muted:#cfcfcf;
+    --red:#d71920; --red2:#a31318; --offwhite:#f6f6f6;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+  *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
 
-  /* Animated background */
+  /* BG carousel */
   .stage{position:relative;min-height:100vh;display:grid;place-items:center;overflow:hidden}
-  .halo{position:absolute;inset:-20%;background:
-    radial-gradient(40% 35% at 20% 25%, rgba(215,25,32,.30), transparent 60%),
-    radial-gradient(40% 35% at 80% 20%, rgba(120,160,255,.24), transparent 60%),
-    radial-gradient(50% 45% at 50% 80%, rgba(255,255,255,.06), transparent 60%);
-    filter:blur(44px) saturate(120%); animation: drift 18s ease-in-out infinite alternate}
-  @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-16px)}}
+  .slides{position:absolute;inset:0;z-index:0}
+  .slides img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease;filter:brightness(.45)}
+  .slides img.show{opacity:1}
+  .tint{position:absolute;inset:0;background:
+        radial-gradient(60% 50% at 50% 30%, rgba(255,255,255,.08), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
+        z-index:0}
 
-  .gridfx{position:absolute;left:-2px;right:-2px;bottom:-2px;height:60vh;
-    background:
-      linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px) 0 0/100% 46px,
-      linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px) 0 0/46px 100%;
-    transform:perspective(900px) rotateX(62deg) translateY(34vh);
-    opacity:.55; animation:grid 12s linear infinite}
-  @keyframes grid{from{background-position-y:0,0}to{background-position-y:46px,0}}
+  /* Top mini brand */
+  .brandbar{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;color:var(--offwhite);
+            display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.02em}
+  .brandbar .logo{width:26px;height:26px;background:#fff;border-radius:6px;
+    -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;
+            mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;}
 
   /* Card */
-  .wrap{position:relative;z-index:2;width:min(1120px,92vw);margin:auto;padding:18px}
-  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:900}
-  .brand .logo{width:28px;height:28px;background:#fff;border-radius:6px;
-    -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;
-    mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;}
-
-  .card{display:grid;gap:14px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05));
-    border:1px solid var(--line); border-radius:18px; padding:20px;
-    box-shadow:0 26px 70px rgba(0,0,0,.35); max-width:520px; margin:20px auto}
-
-  h1{margin:0;font-size:clamp(28px,4.4vw,40px);
-    background:linear-gradient(90deg,#fff,#d2defa,#fff);
-    -webkit-background-clip:text;background-clip:text;color:transparent}
-  .muted{color:var(--muted)}
-
-  .grid{display:grid;grid-template-columns:1fr;gap:10px}
-  label{display:grid;gap:6px}
-  input{
-    background:#0d162f;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 44px 12px 12px;
-    outline:none
-  }
-  .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
-  .btn{cursor:pointer;border-radius:12px;padding:12px 16px;border:1px solid var(--line);
-       background:linear-gradient(180deg,#141d35,#0f162b);color:#fff}
+  .wrap{position:relative;z-index:2;width:min(1100px,92vw);margin:auto;padding:16px}
+  .card{margin:10vh auto 24px;max-width:540px;background:rgba(0,0,0,.55);
+        border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);
+        border-radius:18px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.45);display:grid;gap:14px}
+  h1{margin:.2rem 0 0;font-size:clamp(28px,5vw,40px);font-weight:900}
+  .lead{color:#ddd;margin:0 0 6px}
+  label{display:grid;gap:6px;margin-top:6px}
+  input{background:#101010;color:#fff;border:1px solid #2c2c2c;border-radius:12px;padding:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .btn{cursor:pointer;border-radius:12px;padding:12px 16px;border:1px solid #2c2c2c;background:#181818;color:#fff}
   .btn.primary{border-color:var(--red);background:linear-gradient(180deg,var(--red),var(--red2))}
   .btn.ghost{background:transparent}
-  .hint{font-size:.9rem;color:#cbd6ef}
-
-  .ctl{position:relative}
-  .ctl .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);opacity:.85;cursor:pointer}
-  .ctl .eye::after{content:"👁";font-size:16px}
-
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .linkbtn{border:1px solid rgba(255,255,255,.14);padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35)}
   .status{min-height:20px}
-  .error{color:#ffb3b3}
-  .ok{color:#b7ffcf}
+  .error{color:#ffb3b3}.ok{color:#b7ffcf}.muted{color:#cfcfcf}
 
-  .footer{margin-top:8px;display:flex;gap:12px;justify-content:center;font-size:.9rem}
-  .tag{border:1px solid var(--line);padding:4px 8px;border-radius:999px}
-  .offline{display:none;color:#fff;background:#6b0b0b;border:1px solid #8d1212;padding:8px 10px;border-radius:10px;text-align:center}
-  .offline.show{display:block}
+  .foot{color:#bbb;text-align:center;font-size:.9rem}
+  .foot a{color:#fff}
 </style>
 </head>
 <body>
-  <main class="stage">
-    <div class="halo"></div>
-    <div class="gridfx"></div>
+<main class="stage">
+  <!-- BG images: put your files in /img/ and update names below in JS -->
+  <div class="slides" id="slides"></div>
+  <div class="tint"></div>
 
-    <div class="wrap">
-      <div class="head">
-        <div class="brand"><div class="logo"></div> <span>EGR Staff Hub</span></div>
-        <div class="footer">
-          <span class="tag">Secure</span>
-          <span class="tag">Private</span>
-          <span class="tag">Role-based</span>
-        </div>
+  <div class="brandbar"><div class="logo"></div> Emirates Group Roblox — Staff Hub</div>
+
+  <div class="wrap">
+    <section class="card">
+      <h1>Sign in</h1>
+      <p class="lead">Welcome back. Use your staff email and access code.</p>
+
+      <label>Email
+        <input id="email" type="email" placeholder="you@egr.staff">
+      </label>
+
+      <label>Access code
+        <input id="code" type="password" placeholder="••••••••">
+      </label>
+
+      <div class="row">
+        <label style="display:flex;align-items:center;gap:8px">
+          <input id="remember" type="checkbox" style="width:18px;height:18px"> Remember me
+        </label>
+        <button id="loginBtn" class="btn primary">Sign In</button>
       </div>
 
-      <section class="card">
-        <h1>Sign in</h1>
-        <p class="muted">Enter your staff email and access code to continue.</p>
+      <div id="status" class="status muted"></div>
 
-        <div id="offline" class="offline">You're offline. Check your connection.</div>
+      <div class="actions">
+        <a class="btn ghost" href="https://careers.emiratesgrouproblox.link" target="_blank" rel="noopener">Careers Site</a>
+        <a class="btn ghost" href="https://emiratesgrouproblox.link" target="_blank" rel="noopener">Main Website</a>
+        <a class="btn" style="border-color:#5865F2;background:#5865F2" href="https://discord.com/channels/1189224375019388999" target="_blank" rel="noopener">Contact HR on Discord</a>
+      </div>
+      <div class="links">
+        <span class="linkbtn">Secure</span>
+        <span class="linkbtn">Private</span>
+        <span class="linkbtn">Role-based</span>
+      </div>
+    </section>
 
-        <div class="grid">
-          <label>Email
-            <input id="email" type="email" placeholder="you@egr.staff">
-          </label>
-
-          <label>Access code
-            <div class="ctl">
-              <input id="code" type="password" placeholder="••••••••">
-              <span id="toggle" class="eye" title="Show/Hide"></span>
-            </div>
-          </label>
-
-          <div class="row">
-            <label class="row" style="gap:6px;justify-content:flex-start">
-              <input id="remember" type="checkbox" style="width:18px;height:18px;"> Remember me
-            </label>
-            <button id="loginBtn" class="btn primary">Sign In</button>
-          </div>
-        </div>
-
-        <div id="status" class="status muted"></div>
-        <div class="hint">Tip: Press <b>Enter</b> to sign in. If you don’t have an access code, ask HR.</div>
-      </section>
-    </div>
-  </main>
+    <p class="foot">Having trouble? Ask HR to confirm your <em>email</em> and <em>access code</em> in the Staff Hub sheet.</p>
+  </div>
+</main>
 
 <script>
 /* ====== CONFIG ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwZMbsqT7qYH9WS28zixxLTYNje3VUsFkbwy8evDPpyjReouKpg0hz2SC8xi_cvxu2g/exec"; // <-- paste your /exec URL here
+const API_URL = "YOUR_APPS_SCRIPT_URL"; // e.g. https://script.google.com/macros/s/…/exec
+const BG = [
+  "/img/bg1.jpg",
+  "/img/bg2.jpg",
+  "/img/bg3.jpg"
+]; // <- put your images in /img/ and use their names
 
-/* ====== Small helpers ====== */
-const $ = (s)=>document.querySelector(s);
+/* ====== BG carousel ====== */
+const slides = document.getElementById('slides');
+const imgs = BG.map(u => { const im=new Image(); im.src=u; slides.appendChild(im); return im; });
+let ix=0; function show(i){ imgs.forEach((im,k)=>im.classList.toggle('show',k===i)); }
+imgs[0].onload=()=>show(0); setInterval(()=>{ ix=(ix+1)%imgs.length; show(ix); }, 4200);
+
+/* ====== Helpers ====== */
+const $ = s=>document.querySelector(s);
 const statusEl = $("#status");
+function setStatus(m, cls="muted"){ statusEl.textContent=m||""; statusEl.className="status "+cls; }
+function loading(on){ $("#loginBtn").disabled=!!on; $("#loginBtn").textContent=on?"Signing in…":"Sign In"; }
+function rememberLoad(){ const s=localStorage.getItem("egr_email"); if(s){ $("#email").value=s; $("#remember").checked=true; } }
+rememberLoad();
 
-function setStatus(msg, cls="") {
-  statusEl.textContent = msg || "";
-  statusEl.className = "status " + (cls || "muted");
-}
-function loading(on){ $("#loginBtn").disabled = !!on; $("#loginBtn").textContent = on ? "Signing in…" : "Sign In"; }
-
-/* ====== JSONP call (no CORS issues) ====== */
+/* ====== JSONP (no CORS) ====== */
 function jsonp(method, params, cb){
-  const callback = "cb_" + Math.random().toString(36).slice(2);
+  const callback = "cb_"+Math.random().toString(36).slice(2);
   const q = new URLSearchParams({ method, callback, ...params });
   const s = document.createElement("script");
   s.src = API_URL + "?" + q.toString();
@@ -147,59 +134,24 @@ function jsonp(method, params, cb){
   document.body.appendChild(s);
 }
 
-/* ====== UI wiring ====== */
-$("#toggle").onclick = () => {
-  const el = $("#code"); el.type = (el.type === "password" ? "text" : "password");
-};
-
-function rememberLoad(){
-  const saved = localStorage.getItem("egr_email");
-  if (saved) { $("#email").value = saved; $("#remember").checked = true; }
-}
-rememberLoad();
-
-async function ping(){
-  jsonp("ping", {}, (r)=> {
-    const off = $("#offline");
-    if (!r || r.ok !== true) { off.classList.add("show"); }
-    else { off.classList.remove("show"); }
-  });
-}
-ping(); setInterval(ping, 8000);
-
-/* Enter to submit */
-["email","code"].forEach(id => {
-  document.getElementById(id).addEventListener("keydown", (e)=>{
-    if (e.key === "Enter") { e.preventDefault(); doLogin(); }
-  });
-});
-
-/* ====== LOGIN ====== */
+/* ====== Login ====== */
 function doLogin(){
   const email = $("#email").value.trim();
   const code  = $("#code").value.trim();
-
-  if (!email || !code) { setStatus("Please enter email and access code.", "error"); return; }
+  if(!email || !code){ setStatus("Please enter email and access code.","error"); return; }
   setStatus(""); loading(true);
-
-  jsonp("login", { email, code }, (r)=>{
+  jsonp("login",{email,code},(r)=>{
     loading(false);
-    if (!r || !r.ok) { setStatus(r?.error || "Login failed", "error"); return; }
-
-    // save session
+    if(!r?.ok){ setStatus(r?.error||"Login failed","error"); return; }
     localStorage.setItem("egr_token", r.token);
     localStorage.setItem("egr_profile", JSON.stringify(r.profile));
-
-    // remember email
-    if ($("#remember").checked) localStorage.setItem("egr_email", email);
-    else localStorage.removeItem("egr_email");
-
-    setStatus("Signed in — redirecting…", "ok");
-    window.location.href = "/dashboard.html";
+    if($("#remember").checked) localStorage.setItem("egr_email", email); else localStorage.removeItem("egr_email");
+    setStatus("Signed in — redirecting…","ok");
+    window.location.href="/dashboard.html";
   });
 }
-
-$("#loginBtn").onclick = doLogin;
+$("#loginBtn").onclick=doLogin;
+["email","code"].forEach(id=>document.getElementById(id).addEventListener("keydown",(e)=>{ if(e.key==="Enter"){e.preventDefault();doLogin();} }));
 </script>
 </body>
 </html>
