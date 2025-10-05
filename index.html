@@ -1,28 +1,205 @@
-<!doctype html><html><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
 <title>EGR Staff Hub — Sign In</title>
-<link rel="stylesheet" href="/css/app.css">
-<script defer src="/js/api.js"></script>
-</head><body class="center">
-  <div class="card">
-    <h1>Staff Hub</h1>
-    <p class="muted">Sign in with your staff email and access code</p>
-    <input id="email" placeholder="Email" type="email">
-    <input id="code" placeholder="Access code" type="password">
-    <button id="go">Sign In</button>
-    <p id="msg" class="muted"></p>
-  </div>
-<script>
-document.getElementById('go').onclick = async () => {
-  const email = document.getElementById('email').value.trim();
-  const code  = document.getElementById('code').value.trim();
-  const r = await api("login", { email, code });
-  const m = document.getElementById('msg');
-  if (!r.ok) { m.textContent = r.error || "Login failed"; return; }
-  saveToken(r.token);
-  localStorage.setItem("egr_profile", JSON.stringify(r.profile));
-  window.location.href = "/dashboard.html";
-};
-</script>
-</body></html>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#0a0f1f"/>
 
+<style>
+  :root{
+    --bg:#0a0f1f; --panel:#0f1730; --line:#263658; --text:#eaf1ff; --muted:#9fb0d1;
+    --red:#d71920; --red2:#a31318; --white:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+
+  /* Animated background */
+  .stage{position:relative;min-height:100vh;display:grid;place-items:center;overflow:hidden}
+  .halo{position:absolute;inset:-20%;background:
+    radial-gradient(40% 35% at 20% 25%, rgba(215,25,32,.30), transparent 60%),
+    radial-gradient(40% 35% at 80% 20%, rgba(120,160,255,.24), transparent 60%),
+    radial-gradient(50% 45% at 50% 80%, rgba(255,255,255,.06), transparent 60%);
+    filter:blur(44px) saturate(120%); animation: drift 18s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-16px)}}
+
+  .gridfx{position:absolute;left:-2px;right:-2px;bottom:-2px;height:60vh;
+    background:
+      linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px) 0 0/100% 46px,
+      linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px) 0 0/46px 100%;
+    transform:perspective(900px) rotateX(62deg) translateY(34vh);
+    opacity:.55; animation:grid 12s linear infinite}
+  @keyframes grid{from{background-position-y:0,0}to{background-position-y:46px,0}}
+
+  /* Card */
+  .wrap{position:relative;z-index:2;width:min(1120px,92vw);margin:auto;padding:18px}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+  .brand .logo{width:28px;height:28px;background:#fff;border-radius:6px;
+    -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;
+    mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M3 26 L26 26 L38 18 L44 18 L44 34 L38 34 L26 26 L3 26 L1 28 L1 24 Z" fill="black"/></svg>') center/contain no-repeat;}
+
+  .card{display:grid;gap:14px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05));
+    border:1px solid var(--line); border-radius:18px; padding:20px;
+    box-shadow:0 26px 70px rgba(0,0,0,.35); max-width:520px; margin:20px auto}
+
+  h1{margin:0;font-size:clamp(28px,4.4vw,40px);
+    background:linear-gradient(90deg,#fff,#d2defa,#fff);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .muted{color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:10px}
+  label{display:grid;gap:6px}
+  input{
+    background:#0d162f;color:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 44px 12px 12px;
+    outline:none
+  }
+  .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .btn{cursor:pointer;border-radius:12px;padding:12px 16px;border:1px solid var(--line);
+       background:linear-gradient(180deg,#141d35,#0f162b);color:#fff}
+  .btn.primary{border-color:var(--red);background:linear-gradient(180deg,var(--red),var(--red2))}
+  .btn.ghost{background:transparent}
+  .hint{font-size:.9rem;color:#cbd6ef}
+
+  .ctl{position:relative}
+  .ctl .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);opacity:.85;cursor:pointer}
+  .ctl .eye::after{content:"👁";font-size:16px}
+
+  .status{min-height:20px}
+  .error{color:#ffb3b3}
+  .ok{color:#b7ffcf}
+
+  .footer{margin-top:8px;display:flex;gap:12px;justify-content:center;font-size:.9rem}
+  .tag{border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+  .offline{display:none;color:#fff;background:#6b0b0b;border:1px solid #8d1212;padding:8px 10px;border-radius:10px;text-align:center}
+  .offline.show{display:block}
+</style>
+</head>
+<body>
+  <main class="stage">
+    <div class="halo"></div>
+    <div class="gridfx"></div>
+
+    <div class="wrap">
+      <div class="head">
+        <div class="brand"><div class="logo"></div> <span>EGR Staff Hub</span></div>
+        <div class="footer">
+          <span class="tag">Secure</span>
+          <span class="tag">Private</span>
+          <span class="tag">Role-based</span>
+        </div>
+      </div>
+
+      <section class="card">
+        <h1>Sign in</h1>
+        <p class="muted">Enter your staff email and access code to continue.</p>
+
+        <div id="offline" class="offline">You're offline. Check your connection.</div>
+
+        <div class="grid">
+          <label>Email
+            <input id="email" type="email" placeholder="you@egr.staff">
+          </label>
+
+          <label>Access code
+            <div class="ctl">
+              <input id="code" type="password" placeholder="••••••••">
+              <span id="toggle" class="eye" title="Show/Hide"></span>
+            </div>
+          </label>
+
+          <div class="row">
+            <label class="row" style="gap:6px;justify-content:flex-start">
+              <input id="remember" type="checkbox" style="width:18px;height:18px;"> Remember me
+            </label>
+            <button id="loginBtn" class="btn primary">Sign In</button>
+          </div>
+        </div>
+
+        <div id="status" class="status muted"></div>
+        <div class="hint">Tip: Press <b>Enter</b> to sign in. If you don’t have an access code, ask HR.</div>
+      </section>
+    </div>
+  </main>
+
+<script>
+/* ====== CONFIG ====== */
+const API_URL = "YOUR_APPS_SCRIPT_URL"; // <-- paste your /exec URL here
+
+/* ====== Small helpers ====== */
+const $ = (s)=>document.querySelector(s);
+const statusEl = $("#status");
+
+function setStatus(msg, cls="") {
+  statusEl.textContent = msg || "";
+  statusEl.className = "status " + (cls || "muted");
+}
+function loading(on){ $("#loginBtn").disabled = !!on; $("#loginBtn").textContent = on ? "Signing in…" : "Sign In"; }
+
+/* ====== JSONP call (no CORS issues) ====== */
+function jsonp(method, params, cb){
+  const callback = "cb_" + Math.random().toString(36).slice(2);
+  const q = new URLSearchParams({ method, callback, ...params });
+  const s = document.createElement("script");
+  s.src = API_URL + "?" + q.toString();
+  window[callback] = (resp)=>{ cb(resp); document.body.removeChild(s); delete window[callback]; };
+  s.onerror = ()=>{ cb({ ok:false, error:"Network error" }); document.body.removeChild(s); delete window[callback]; };
+  document.body.appendChild(s);
+}
+
+/* ====== UI wiring ====== */
+$("#toggle").onclick = () => {
+  const el = $("#code"); el.type = (el.type === "password" ? "text" : "password");
+};
+
+function rememberLoad(){
+  const saved = localStorage.getItem("egr_email");
+  if (saved) { $("#email").value = saved; $("#remember").checked = true; }
+}
+rememberLoad();
+
+async function ping(){
+  jsonp("ping", {}, (r)=> {
+    const off = $("#offline");
+    if (!r || r.ok !== true) { off.classList.add("show"); }
+    else { off.classList.remove("show"); }
+  });
+}
+ping(); setInterval(ping, 8000);
+
+/* Enter to submit */
+["email","code"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", (e)=>{
+    if (e.key === "Enter") { e.preventDefault(); doLogin(); }
+  });
+});
+
+/* ====== LOGIN ====== */
+function doLogin(){
+  const email = $("#email").value.trim();
+  const code  = $("#code").value.trim();
+
+  if (!email || !code) { setStatus("Please enter email and access code.", "error"); return; }
+  setStatus(""); loading(true);
+
+  jsonp("login", { email, code }, (r)=>{
+    loading(false);
+    if (!r || !r.ok) { setStatus(r?.error || "Login failed", "error"); return; }
+
+    // save session
+    localStorage.setItem("egr_token", r.token);
+    localStorage.setItem("egr_profile", JSON.stringify(r.profile));
+
+    // remember email
+    if ($("#remember").checked) localStorage.setItem("egr_email", email);
+    else localStorage.removeItem("egr_email");
+
+    setStatus("Signed in — redirecting…", "ok");
+    window.location.href = "/dashboard.html";
+  });
+}
+
+$("#loginBtn").onclick = doLogin;
+</script>
+</body>
+</html>
