@@ -1,0 +1,6 @@
+body{margin:0;font-family:'Segoe UI',sans-serif;background:#e0e0e0 url('/media/EGR%20Flight%20Pic%20350.png') center/cover fixed;color:#111;
+display:flex;justify-content:center;align-items:center;height:100vh;}
+.login{background:rgba(255,255,255,.9);padding:40px 60px;border-radius:16px;box-shadow:0 0 20px rgba(0,0,0,.2);text-align:center;}
+button{background:#d71920;border:none;padding:10px 24px;border-radius:6px;color:#fff;font-weight:600;cursor:pointer;}
+input{padding:10px 15px;border:1px solid #ccc;border-radius:6px;font-size:1rem;margin:8px 0;}
+h1{color:#d71920;}
