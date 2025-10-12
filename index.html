@@ -46,7 +46,7 @@ const bg = document.getElementById('bg');
 const imgs = BG.map(n=>{const i=new Image(); i.src=n.split('/').map(encodeURIComponent).join('/'); bg.appendChild(i); return i;});
 let i=0; imgs[0].onload=()=>imgs[0].classList.add('show'); setInterval(()=>{imgs[i].classList.remove('show');i=(i+1)%imgs.length;imgs[i].classList.add('show');},5000);
 
-const API = "PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE"; // <= CHANGE THIS
+const API = "https://script.google.com/macros/s/AKfycbzaHhkZQ_aVEdYxqzK_5ffrTcLI0MXR2SA8hMGwpA5hdndkUUeNRlixf8EICH0_CDjf/exec"; // <= CHANGE THIS
 const $ = s => document.querySelector(s);
 
 async function sha256(s){
