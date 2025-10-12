@@ -2,191 +2,271 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>EGR Staff Hub — Dashboard</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EGR Staff Hub — Dashboard</title>
 <style>
-  :root{--red:#d71920;--ink:#111;--muted:#667;--card:#fff;--line:#eee;--bg:#f6f7f9}
-  *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-  header{display:flex;align-items:center;gap:12px;background:var(--red);color:#fff;padding:14px 18px}
-  .avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.7)}
-  .grow{flex:1}
-  .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-  .white{background:#fff;color:var(--red)}
-  main{padding:18px;display:grid;gap:16px}
-  .grid{display:grid;gap:16px}
-  @media(min-width:900px){.grid{grid-template-columns:2fr 1fr}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-  h2{margin:.2rem 0 8px}
-  h3{margin:.2rem 0 8px}
-  .list{display:grid;gap:10px}
-  .item{border:1px solid var(--line);border-radius:12px;padding:12px}
-  .muted{color:var(--muted)}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input, textarea, select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+:root{--red:#d71920;--bg:#f4f6f9;--card:#fff;--ink:#111;--muted:#6b7280;--line:#e5e7eb}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:260px 1fr;height:100vh}
+.side{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.brand{padding:16px;border-bottom:1px solid var(--line);color:var(--red);font-weight:900}
+.nav a{display:block;padding:12px 16px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.nav a.active{background:#fff3f3;color:#a11318;font-weight:700}
+.top{background:var(--red);color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px}
+.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.8)}
+.main{overflow:auto}
+.section{padding:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+h2{margin:.2rem 0 8px}
+.item{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+.btn.red{background:var(--red);color:#fff}
+.badge{background:#eef2ff;border:1px solid #c7d2fe;padding:2px 8px;border-radius:999px;font-size:.8rem}
+.chat{display:grid;grid-template-columns:260px 1fr;gap:12px}
+.chat .list{max-height:50vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.chat .thread{display:grid;grid-template-rows:1fr auto;border:1px solid var(--line);border-radius:10px;min-height:50vh}
+.msgs{padding:10px;overflow:auto}
+.msg{margin:6px 0}
+.msg.me{ text-align:right }
+.mini{color:var(--muted);font-size:.85rem}
 </style>
 </head>
 <body>
-<header>
-  <img id="avatar" class="avatar" alt="">
-  <div class="grow">
-    <div style="font-weight:900" id="name">Loading…</div>
-    <div class="muted" id="meta">—</div>
+<div class="app">
+  <aside class="side">
+    <div class="brand">EGR Staff Hub</div>
+    <nav class="nav">
+      <a href="#" data-tab="home" class="active">Home</a>
+      <a href="#" data-tab="tasks">My Tasks</a>
+      <a href="#" data-tab="messages">Messages</a>
+      <a href="#" data-tab="admin" id="adminTab" style="display:none">HR / Admin</a>
+      <a href="index.html" id="logout">Logout</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <img id="avatar" class="avatar" alt="">
+      <div>
+        <div id="name" style="font-weight:900">—</div>
+        <div id="meta" class="mini">—</div>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <section class="section" data-view="home">
+      <div class="cards">
+        <div class="card">
+          <h2>Announcements</h2>
+          <div id="annList"></div>
+        </div>
+        <div class="card">
+          <h2>Schedule</h2>
+          <div class="mini">Weekly timetable (placeholder). We can wire this to a “schedule” sheet.</div>
+          <div class="item">Mon — OCC Briefing — 19:00 GST</div>
+          <div class="item">Wed — Training — 18:00 GST</div>
+          <div class="item">Sat — Group Flight — 21:00 GST</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TASKS -->
+    <section class="section" data-view="tasks" style="display:none">
+      <div class="card">
+        <h2>My Tasks</h2>
+        <div id="taskList"></div>
+      </div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="section" data-view="messages" style="display:none">
+      <div class="card">
+        <h2>Direct Messages</h2>
+        <div class="chat">
+          <div class="list" id="userList"></div>
+          <div class="thread">
+            <div class="msgs" id="msgs"></div>
+            <div class="row" style="padding:10px">
+              <input id="chatText" placeholder="Write a message…">
+              <button class="btn red" id="sendBtn">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="section" data-view="admin" style="display:none">
+      <div class="cards">
+        <div class="card">
+          <h2>Post Announcement</h2>
+          <input id="annTitle" placeholder="Title">
+          <textarea id="annBody" rows="3" placeholder="Message"></textarea>
+          <button class="btn red" id="postAnn">Post</button>
+        </div>
+
+        <div class="card">
+          <h2>Issue Action</h2>
+          <div class="mini">Types: Warning, Suspension, Termination</div>
+          <input id="actTarget" placeholder="Target email">
+          <select id="actType">
+            <option>Warning</option><option>Suspension</option><option>Termination</option>
+          </select>
+          <input id="actReason" placeholder="Reason">
+          <button class="btn red" id="issueAct">Submit</button>
+        </div>
+      </div>
+    </section>
   </div>
-  <button class="btn white" id="logout">Logout</button>
-</header>
+</div>
 
-<main>
-  <section class="grid">
-    <div class="card">
-      <h2>Welcome</h2>
-      <p class="muted">This is your staff dashboard. Access schedules, documents, and announcements.</p>
-
-      <div class="kpis" style="margin-top:12px">
-        <div class="kpi"><div style="font-weight:900;font-size:22px" id="k_open">0</div><div class="muted">Open Announcements</div></div>
-        <div class="kpi"><div style="font-weight:900;font-size:22px" id="k_warn">0</div><div class="muted">Active Warnings</div></div>
-        <div class="kpi"><div style="font-weight:900;font-size:22px" id="k_docs">12</div><div class="muted">Docs</div></div>
-        <div class="kpi"><div style="font-weight:900;font-size:22px" id="k_me">—</div><div class="muted">Your Tasks</div></div>
-      </div>
-
-      <h3 style="margin-top:18px">Announcements</h3>
-      <div id="annList" class="list"></div>
-    </div>
-
-    <div class="card" id="adminPanel" style="display:none">
-      <h2>Admin Console</h2>
-      <p class="muted">HR & Executive tools. Actions here are saved to your browser (demo). For shared persistence we can add a backend later.</p>
-
-      <h3 style="margin-top:8px">New Announcement</h3>
-      <div class="row">
-        <input id="annTitle" placeholder="Title">
-        <textarea id="annBody" placeholder="Message" rows="3"></textarea>
-        <button class="btn" style="background:var(--red);color:#fff" id="postAnn">Post</button>
-      </div>
-
-      <h3 style="margin-top:14px">Issue Warning</h3>
-      <div class="row">
-        <input id="warnUser" placeholder="User email (e.g. ash@flydubai)">
-        <select id="warnLevel">
-          <option value="Notice">Notice</option>
-          <option value="Warning">Warning</option>
-          <option value="Final">Final</option>
-        </select>
-        <input id="warnReason" placeholder="Reason">
-        <button class="btn" style="background:var(--red);color:#fff" id="issueWarn">Issue</button>
-      </div>
-
-      <h3 style="margin-top:14px">Warnings</h3>
-      <div id="warnList" class="list"></div>
-    </div>
-  </section>
-</main>
-
-<script src="/js/users.js"></script>
 <script>
-// Auth gate
-const me = window.EGR_AUTH.me();
-if (!me) { location.href = "index.html"; }
+const API = "PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE"; // <= SAME URL
+const token = localStorage.getItem("egr_token");
+if (!token) location.href="index.html";
 
-// Fill header
-document.getElementById('name').textContent = me.full_name || me.email;
-document.getElementById('meta').textContent = `${me.role || 'Staff'} • ${me.department || '-'}`;
-if (me.avatar_url) document.getElementById('avatar').src = me.avatar_url;
-document.getElementById('logout').onclick = ()=>{ window.EGR_AUTH.logout(); location.href="index.html"; };
+// UI helpers
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+function show(tab){ $$("[data-view]").forEach(v=>v.style.display = v.getAttribute("data-view")===tab ? "" : "none");
+  $$(".nav a").forEach(a=>a.classList.toggle("active", a.dataset.tab===tab)); }
 
-// Simple localStorage stores (demo)
-const ANN_KEY = "egr_announcements";
-const WARN_KEY = "egr_warnings";
-
-function loadJSON(k, fallback) {
-  try { return JSON.parse(localStorage.getItem(k) || "null") ?? fallback; }
-  catch { return fallback; }
-}
-function saveJSON(k, v) {
-  localStorage.setItem(k, JSON.stringify(v));
+// Profile
+async function me(){
+  const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ method:"me", token })
+  }).then(r=>r.json()).catch(()=>({ok:false}));
+  if(!r.ok){ localStorage.clear(); location.href="index.html"; return; }
+  const p = r.profile;
+  $("#name").textContent = p.full_name || p.email;
+  $("#meta").textContent = `${p.role} • ${p.department}`;
+  if (p.avatar_url) $("#avatar").src = p.avatar_url;
+  if (p.is_admin) $("#adminTab").style.display = "";
+  return p;
 }
 
 // Announcements
-function renderAnnouncements(){
-  const list = document.getElementById('annList');
-  const items = loadJSON(ANN_KEY, []);
-  document.getElementById('k_open').textContent = items.length;
-  if (!items.length) { list.innerHTML = `<div class="item muted">No announcements yet.</div>`; return; }
-  list.innerHTML = items.map((a,i)=>`
+async function loadAnnouncements(){
+  const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ method:"ann.list" })
+  }).then(r=>r.json()).catch(()=>({ok:false}));
+  const wrap = $("#annList");
+  if(!r.ok || !r.items?.length){ wrap.innerHTML = `<div class="item mini">No announcements.</div>`; return; }
+  wrap.innerHTML = r.items.map(a=>`
     <div class="item">
-      <div class="row" style="justify-content:space-between">
-        <strong>${a.title}</strong>
-        ${me.is_admin ? `<button class="btn" onclick="delAnn(${i})">Delete</button>` : ``}
+      <div class="row" style="justify-content:space-between"><strong>${a.title}</strong><span class="mini">${new Date(a.created_at).toLocaleString()}</span></div>
+      <div class="mini">By ${a.author}</div>
+      <div style="margin-top:6px">${(a.body||"").replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+$("#postAnn")?.addEventListener("click", async ()=>{
+  const title = $("#annTitle").value.trim(), body = $("#annBody").value.trim();
+  if(!title || !body) return;
+  await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ method:"ann.post", token, title, body, author:"Admin" })});
+  $("#annTitle").value=""; $("#annBody").value=""; loadAnnouncements();
+});
+
+// Actions (HR)
+$("#issueAct")?.addEventListener("click", async ()=>{
+  const target = $("#actTarget").value.trim();
+  const type   = $("#actType").value;
+  const reason = $("#actReason").value.trim();
+  if(!target || !reason) return;
+  await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ method:"act.create", token, target_email:target, type, reason, author:"HR" })});
+  $("#actTarget").value=""; $("#actReason").value="";
+  alert(`${type} recorded for ${target}`);
+});
+
+// Tasks
+async function loadTasks(){
+  const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ method:"task.list", token })
+  }).then(r=>r.json()).catch(()=>({ok:false}));
+  const wrap = $("#taskList");
+  if(!r.ok || !r.items?.length){ wrap.innerHTML = `<div class="item mini">No tasks assigned.</div>`; return; }
+  wrap.innerHTML = r.items.map(t=>`
+    <div class="item">
+      <div class="row" style="justify-content:space-between"><strong>${t.title}</strong><span class="badge">${t.status}</span></div>
+      <div class="mini">${t.details||""}</div>
+      <div class="mini">${t.due_date?("Due "+t.due_date):""}</div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn" onclick="updateTask('${t.id}','in_progress')">In progress</button>
+        <button class="btn" onclick="updateTask('${t.id}','done')">Done</button>
       </div>
-      <div class="muted" style="font-size:.9rem">By ${a.by} • ${new Date(a.ts).toLocaleString()}</div>
-      <div style="margin-top:6px">${a.body.replace(/\n/g,'<br>')}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-window.delAnn = function(i){
-  if (!me.is_admin) return;
-  const items = loadJSON(ANN_KEY, []);
-  items.splice(i,1); saveJSON(ANN_KEY, items); renderAnnouncements();
+async function updateTask(id, status){
+  await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ method:"task.update", token, id, status })});
+  loadTasks();
 }
 
-if (me.is_admin) {
-  document.getElementById('adminPanel').style.display = "";
-  document.getElementById('postAnn').onclick = ()=>{
-    const t = document.getElementById('annTitle').value.trim();
-    const b = document.getElementById('annBody').value.trim();
-    if (!t || !b) return;
-    const items = loadJSON(ANN_KEY, []);
-    items.unshift({ title: t, body: b, by: me.full_name || me.email, ts: Date.now() });
-    saveJSON(ANN_KEY, items);
-    document.getElementById('annTitle').value = "";
-    document.getElementById('annBody').value = "";
-    renderAnnouncements();
-  };
-
-  // Warnings
-  function renderWarnings(){
-    const list = document.getElementById('warnList');
-    const items = loadJSON(WARN_KEY, []);
-    document.getElementById('k_warn').textContent = items.length;
-    if (!items.length) { list.innerHTML = `<div class="item muted">No warnings.</div>`; return; }
-    list.innerHTML = items.map((w,i)=>`
-      <div class="item">
-        <div class="row" style="justify-content:space-between">
-          <strong>${w.level}</strong>
-          <button class="btn" onclick="delWarn(${i})">Delete</button>
-        </div>
-        <div class="muted" style="font-size:.9rem">${w.user} • ${new Date(w.ts).toLocaleString()} • By ${w.by}</div>
-        <div style="margin-top:6px">${w.reason}</div>
-      </div>
-    `).join('');
-  }
-  window.delWarn = function(i){
-    const items = loadJSON(WARN_KEY, []);
-    items.splice(i,1); saveJSON(WARN_KEY, items); renderWarnings();
-  };
-
-  document.getElementById('issueWarn').onclick = ()=>{
-    const user = document.getElementById('warnUser').value.trim();
-    const level = document.getElementById('warnLevel').value;
-    const reason = document.getElementById('warnReason').value.trim();
-    if (!user || !reason) return;
-    const items = loadJSON(WARN_KEY, []);
-    items.unshift({ user, level, reason, by: me.full_name || me.email, ts: Date.now() });
-    saveJSON(WARN_KEY, items);
-    document.getElementById('warnUser').value = "";
-    document.getElementById('warnReason').value = "";
-    renderWarnings();
-  };
-
-  renderWarnings();
+// Messages (DM)
+let meProfile=null, currentPeer="";
+async function loadUserList(){
+  // For simplicity, list from announcements authors + your own. You can switch to a “users list” endpoint later.
+  // Here we just allow manual entry on first DM: click a button to add.
+  const wrap = $("#userList");
+  wrap.innerHTML = `
+    <div class="item"><input id="peerEmail" placeholder="Enter staff email…"><button class="btn red" onclick="openThread()">Open</button></div>
+    <div id="knownPeers"></div>`;
+  renderPeers();
 }
+function renderPeers(){
+  const peers = JSON.parse(localStorage.getItem("egr_peers")||"[]");
+  $("#knownPeers").innerHTML = peers.map(e=>`<div class="item"><a href="#" onclick="openThread('${e}');return false;">${e}</a></div>`).join('');
+}
+window.openThread = async function(email){
+  if(!email){ email = document.getElementById("peerEmail").value.trim(); if(!email) return; }
+  const peers = JSON.parse(localStorage.getItem("egr_peers")||"[]");
+  if(!peers.includes(email)){ peers.push(email); localStorage.setItem("egr_peers", JSON.stringify(peers)); renderPeers(); }
+  currentPeer = email; await loadThread();
+}
+async function loadThread(){
+  const r = await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ method:"chat.thread", token, with_email: currentPeer })}).then(r=>r.json()).catch(()=>({ok:false}));
+  const list = $("#msgs");
+  list.innerHTML = "";
+  if(!r.ok){ list.innerHTML = `<div class="mini">Error loading chat.</div>`; return; }
+  r.items.forEach(m=>{
+    const div = document.createElement("div");
+    div.className = "msg" + (m.from_email===meProfile.email?" me":"");
+    div.innerHTML = `<div>${m.text}</div><div class="mini">${new Date(m.created_at).toLocaleString()}</div>`;
+    list.appendChild(div);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+document.getElementById("sendBtn").onclick = async ()=>{
+  const t = document.getElementById("chatText").value.trim();
+  if(!t || !currentPeer) return;
+  await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ method:"chat.send", token, with_email: currentPeer, text: t })});
+  document.getElementById("chatText").value = "";
+  loadThread();
+};
+setInterval(()=>{ if(currentPeer) loadThread(); }, 5000);
 
-// Personal tasks demo number
-document.getElementById('k_me').textContent = Math.floor(Math.random()*4)+1;
+// Nav
+$$(".nav a").forEach(a=>a.addEventListener("click", e=>{
+  e.preventDefault(); const tab = a.dataset.tab; if(!tab) return;
+  show(tab);
+}));
 
-// Initial render
-renderAnnouncements();
+// Logout
+document.getElementById("logout").onclick = (e)=>{ e.preventDefault(); localStorage.clear(); location.href="index.html"; };
+
+// Boot
+(async function(){
+  meProfile = await me();
+  await loadAnnouncements();
+  await loadTasks();
+  await loadUserList();
+})();
 </script>
 </body>
 </html>
