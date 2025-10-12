@@ -2,83 +2,74 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>EGR Staff Hub — Sign In</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>EGR Staff Hub — Sign In</title>
 <style>
-  :root{--red:#d71920;--red2:#a01318;--text:#111;--panel:#ffffff;--muted:#666}
-  *{box-sizing:border-box} html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif}
-  .bg{position:fixed;inset:0;z-index:-1}
-  .bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s ease;filter:brightness(.5)}
-  .bg img.show{opacity:1}
-  .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
-  .card{width:min(480px,92vw);background:rgba(255,255,255,.92);border-radius:16px;padding:28px;
-        box-shadow:0 18px 60px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.06)}
-  h1{margin:.2rem 0 8px;color:var(--red);font-weight:900}
-  p{margin:0 0 14px;color:var(--muted)}
-  label{display:grid;gap:6px;margin:8px 0}
-  input{padding:12px;border:1px solid #ddd;border-radius:12px;font-size:1rem}
-  .row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px}
-  .btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}
-  .primary{background:linear-gradient(180deg,var(--red),var(--red2));color:#fff}
-  .ghost{background:transparent;border:1px solid #ddd}
-  #msg{min-height:20px;margin-top:6px}
-  .brand{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .logo{width:22px;height:22px;background:#d71920;border-radius:6px}
+:root{--red:#d71920;--ink:#111;--muted:#6b7280;--panel:#fff}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif}
+.bg{position:fixed;inset:0;z-index:-1}
+.bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .9s;filter:brightness(.55)}
+.bg img.show{opacity:1}
+.wrap{min-height:100%;display:grid;place-items:center;padding:24px}
+.card{width:min(480px,92vw);background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:28px;box-shadow:0 18px 60px rgba(0,0,0,.25)}
+h1{margin:.2rem 0 8px;color:var(--red);font-weight:900}
+p{margin:0 0 12px;color:var(--muted)}
+label{display:grid;gap:6px;margin:8px 0}
+input{padding:12px;border:1px solid #ddd;border-radius:12px;font-size:1rem}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}
+.primary{background:linear-gradient(180deg,#d71920,#a01318);color:#fff}
+.ghost{background:transparent;border:1px solid #ddd}
+#msg{min-height:20px;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="bg" id="bg"></div>
-
 <div class="wrap">
   <section class="card">
-    <div class="brand"><div class="logo"></div><strong>Emirates Group Roblox — Staff Hub</strong></div>
-    <h1>Sign in</h1>
-    <p>Welcome back. Authorized staff only.</p>
-
-    <label>Email
-      <input id="email" type="text" placeholder="you@egr">
-    </label>
-    <label>Password
-      <input id="pass" type="password" placeholder="••••••••">
-    </label>
-
+    <h1>EGR Staff Hub</h1>
+    <p>Sign in with your staff email & password.</p>
+    <label>Email <input id="email" type="text" placeholder="you@egr"></label>
+    <label>Password <input id="pass" type="password" placeholder="••••••••"></label>
     <div class="row">
       <button class="btn ghost" onclick="location.href='https://emiratesgrouproblox.link'">Main Site</button>
-      <button id="loginBtn" class="btn primary">Sign In</button>
+      <button class="btn primary" id="loginBtn">Sign In</button>
     </div>
     <div id="msg"></div>
   </section>
 </div>
 
-<!-- Users + Auth -->
-<script src="/js/users.js"></script>
 <script>
-// Rotating background using your exact filenames (keep names as-is at repo root if you want)
-const BG_FILES = [
-  "EGR Flight Pic 350.png",
-  "EGR Flight Pic 380.png",
-  "EK 707 group pic.png"
-];
+// Background rotation (use your filenames as-is in the same folder)
+const BG = ["EGR Flight Pic 350.png", "EGR Flight Pic 380.png", "EK 707 group pic.png"];
 const bg = document.getElementById('bg');
-const ims = BG_FILES.map(n=>{const i=new Image(); i.src=n.split('/').map(encodeURIComponent).join('/'); bg.appendChild(i); return i;});
-let ix=0; ims[0].onload=()=>ims[0].classList.add('show');
-setInterval(()=>{ ims[ix].classList.remove('show'); ix=(ix+1)%ims.length; ims[ix].classList.add('show'); }, 5000);
+const imgs = BG.map(n=>{const i=new Image(); i.src=n.split('/').map(encodeURIComponent).join('/'); bg.appendChild(i); return i;});
+let i=0; imgs[0].onload=()=>imgs[0].classList.add('show'); setInterval(()=>{imgs[i].classList.remove('show');i=(i+1)%imgs.length;imgs[i].classList.add('show');},5000);
 
-const $=s=>document.querySelector(s);
-const msg = $("#msg");
-async function doLogin(){
+const API = "PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE"; // <= CHANGE THIS
+const $ = s => document.querySelector(s);
+
+async function sha256(s){
+  const enc = new TextEncoder().encode(s);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function login(){
   const email = $("#email").value.trim();
   const pass  = $("#pass").value;
-  msg.textContent = "";
-  const r = await window.EGR_AUTH.login(email, pass);
-  if(!r.ok){ msg.textContent = "❌ " + r.error; return; }
-  msg.textContent = "✅ Welcome, " + (r.profile.full_name || r.profile.email);
-  setTimeout(()=>location.href="dashboard.html", 700);
+  $("#msg").textContent = "";
+  if(!email || !pass){ $("#msg").textContent = "Enter email & password"; return; }
+  const password_hash = await sha256(pass);
+  const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ method:"login", email, password_hash })
+  }).then(r=>r.json()).catch(()=>({ok:false,error:"Network"}));
+  if(!r.ok){ $("#msg").textContent = "❌ "+r.error; return; }
+  localStorage.setItem("egr_token", r.token);
+  localStorage.setItem("egr_profile", JSON.stringify(r.profile));
+  location.href = "dashboard.html";
 }
-$("#loginBtn").onclick = doLogin;
-["email","pass"].forEach(id => {
-  document.getElementById(id).addEventListener("keydown", e => { if(e.key==="Enter"){e.preventDefault(); doLogin();} });
-});
+$("#loginBtn").onclick = login;
+["email","pass"].forEach(id => document.getElementById(id).addEventListener("keydown", e=>{ if(e.key==="Enter"){e.preventDefault();login();} }));
 </script>
 </body>
 </html>
